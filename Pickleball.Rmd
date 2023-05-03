@@ -1,0 +1,79 @@
+---
+title: "Pickleball"
+author: "Logan Fisher"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r}
+
+library(tidyverse)
+library(rvest)
+
+```
+
+```{r}
+
+pickleball <- data.frame(matrix(0, ncol = 30, nrow = 1))
+
+names(pickleball) <- c("set_id", "event_id", "x", "y", "event", "error", "stroke", "shot", "athlete_id", "team1_score", "team2_score",
+                       "team1_player1_x", "team1_player1_y", 
+                       "team1_player2_x", "team1_player2_y",
+                       "team2_player1_x", "team2_player1_y",
+                       "team2_player2_x", "team2_player2_y")
+
+```
+
+```{r}
+
+temp_html <- read_html("https://www.babycenter.com/baby-names/most-popular/top-baby-names")
+last_temp_html <- read_html("https://www.thoughtco.com/most-common-us-surnames-1422656")
+baby_names <- as.data.frame(temp_html %>%
+  html_table())
+girl_names <- baby_names %>%
+  select(-1,-3)
+boy_names <- baby_names %>%
+  select(-1,-2)
+last_names <- as.data.frame(last_temp_html %>%
+  html_table()) %>%
+  select(Surname)
+sexes <- c("Male", "Female")
+countries <- c("United States", "Canada", "Mexico", "Great Britain", "France", "Spain", "Finland", "China", "Brazil", "Japan")
+
+```
+
+```{r}
+
+athletes <- data.frame()
+
+for (i in 1:100) {
+  sex <- sample(sexes, size = 1)
+  athletes[i,1] <- case_when(sex == "Male" ~ paste0(sample_n(boy_names, 1)[[1]], " ", sample_n(last_names, 1)[[1]]),
+                             sex == "Female" ~ paste0(sample_n(girl_names, 1)[[1]], " ", sample_n(last_names, 1)[[1]]))
+  athletes[i,2] <- sample(19:27, 1)
+  athletes[i,3] <- sex
+  athletes[i,4] <- case_when(sex == "Male" ~ sample(66:76, 1),
+                             sex == "Female" ~ sample(60:70, 1))
+  athletes[i,5] <- case_when(sex == "Male" ~ sample(140:220, 1),
+                             sex == "Female" ~ sample(100:180, 1))
+  athletes[i,6] <- sample(countries)[[1]]
+  athletes[i,7] <- i
+  athletes[i,8] <- sample(70:99,1)
+  
+}
+
+names(athletes) <- c("Name", "Age", "Sex", "Height", "Weight", "Country", "ID", "Rating")
+```
+
+```{r metrics}
+
+error_types <- c("Out Error", "Net Error")
+
+stroke_types <- c("Forehand", "Backhand")
+
+shot_types <- c("Attack Volley", "Dink")
+
+
+
+```
+
