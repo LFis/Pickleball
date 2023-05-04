@@ -190,7 +190,9 @@ test <- matches
 
 ```{r}
 
+write_csv(matches, "C:\\Users\\LoganFisher\\Documents\\Pickleball\\Pickleball.csv")
 
+write_csv(athletes, "C:\\Users\\LoganFisher\\Documents\\Pickleball\\Athletes.csv")
 
 ```
 
