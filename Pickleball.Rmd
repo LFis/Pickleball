@@ -167,14 +167,33 @@ for (i in 1:500) {
                               temp_set[i,1] == "doubles" & temp_set[i,9] > 22 & temp_set[i,8] < 10 & temp_set[i,22] >= temp_set[i,8] ~ "Forehand",
                               temp_set[i,1] == "doubles" & temp_set[i,9] > 22 & temp_set[i,8] < 10 & temp_set[i,22] < temp_set[i,8] ~ "Backhand")
   temp_set[i,26] <- x
+  temp_set[i,27] <- case_when(temp_set[i,3] == "end" & temp_set[i,10] == 11 & temp_set[i,11] <= 9 ~ "end",
+                              temp_set[i,3] == "end" & temp_set[i,11] == 11 & temp_set[i,10] <= 9 ~ "end",
+                              temp_set[i,3] == "end" & temp_set[i,10] >= 11 & temp_set[i,10] > temp_set[i,11] & temp_set[i,10] - temp_set[i,11] == 2 ~ "end",
+                              temp_set[i,3] == "end" & temp_set[i,11] >= 11 & temp_set[i,11] > temp_set[i,10] & temp_set[i,11] - temp_set[i,10] == 2 ~ "end")
+  temp_set[i,28] <- case_when(temp_set[i,3] == "serve" & temp_set[i,6] == "Team 1" ~ temp_set[i,12],
+                              temp_set[i,3] == "serve" & temp_set[i,6] == "Team 2" ~ temp_set[i,14],
+                              temp_set[i,7] == "Team 1" & temp_set[i,8] <= 10 ~ temp_set[i,12],
+                              temp_set[i,7] == "Team 1" & temp_set[i,8] > 10 ~ temp_set[i,13],
+                              temp_set[i,7] == "Team 2" & temp_set[i,8] >= 10 ~ temp_set[i,14],
+                              temp_set[i,7] == "Team 2" & temp_set[i,8] < 10 ~ temp_set[i,15])
 }
 
-names(temp_set) <- c("game_type", "event_id", "event", "set_event_id", "set_id", "serving_team", "shot_team", "shot_x", "shot_y", "team1_score", "team2_score", "team1_player1", "team1_player2", "team2_player1", "team2_player2", "team1_player1_x", "team1_player1_y", "team1_player2_x", "team1_player2_y", "team2_player1_x", "team2_player1_y", "team2_player2_x", "team2_player2_y", "shot_type", "stroke_type", "id")
+names(temp_set) <- c("game_type", "event_id", "event", "set_event_id", "set_id", "serving_team", "shot_team", "shot_x", "shot_y", "team1_score", "team2_score", "team1_player1", "team1_player2", "team2_player1", "team2_player2", "team1_player1_x", "team1_player1_y", "team1_player2_x", "team1_player2_y", "team2_player1_x", "team2_player1_y", "team2_player2_x", "team2_player2_y", "shot_type", "stroke_type", "id", "period", "shot_player")
+
+match_end <- temp_set %>%
+  filter(period == "end")
+
+match_end <- match_end[[1,5]]
+
+temp_set <- temp_set %>%
+  filter(set_id <= match_end)
 
 matches <- rbind(matches, temp_set)
 print(x)
 }
 
+test <- matches
 
 ```
 
