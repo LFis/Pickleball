@@ -80,8 +80,8 @@ for (x in 1:300) {
 
 game_type <- sample(game_types)[[1]]
 
-team1 <- case_when(game_type == "singles" ~ sample_n(athletes, 1), 
-                   TRUE ~ sample_n(athletes, 2 ))
+team1 <- case_when(game_type == "singles" ~ sample_n(athletes, size = 1), 
+                   TRUE ~ sample_n(athletes, size = 2))
 team2 <- case_when(game_type == "singles" ~ sample_n(subset(athletes, !(ID %in% team1$ID)), 1), 
                 TRUE ~ sample_n(subset(athletes, !(ID %in% team1$ID)), 2))
 
@@ -162,10 +162,12 @@ for (i in 1:500) {
                               temp_set[i,3] == "end" & temp_set[i,11] >= 11 & temp_set[i,11] > temp_set[i,10] & temp_set[i,11] - temp_set[i,10] == 2 ~ "end")
   temp_set[i,28] <- case_when(temp_set[i,3] == "serve" & temp_set[i,6] == "Team 1" ~ temp_set[i,12],
                               temp_set[i,3] == "serve" & temp_set[i,6] == "Team 2" ~ temp_set[i,14],
-                              temp_set[i,7] == "Team 1" & temp_set[i,8] <= 10 ~ temp_set[i,12],
-                              temp_set[i,7] == "Team 1" & temp_set[i,8] > 10 ~ temp_set[i,13],
-                              temp_set[i,7] == "Team 2" & temp_set[i,8] >= 10 ~ temp_set[i,14],
-                              temp_set[i,7] == "Team 2" & temp_set[i,8] < 10 ~ temp_set[i,15])
+                              temp_set[i,1] == "doubles" & temp_set[i,7] == "Team 1" & temp_set[i,8] <= 10 ~ temp_set[i,12],
+                              temp_set[i,1] == "doubles" & temp_set[i,7] == "Team 1" & temp_set[i,8] > 10 ~ temp_set[i,13],
+                              temp_set[i,1] == "doubles" & temp_set[i,7] == "Team 2" & temp_set[i,8] >= 10 ~ temp_set[i,14],
+                              temp_set[i,1] == "doubles" & temp_set[i,7] == "Team 2" & temp_set[i,8] < 10 ~ temp_set[i,15],
+                              temp_set[i,1] == "singles" & temp_set[i,9] < 22 ~ temp_set[i,12],
+                              temp_set[i,1] == "singles" & temp_set[i,9] > 22 ~ temp_set[i,14])
 }
 
 names(temp_set) <- c("game_type", "event_id", "event", "set_event_id", "set_id", "serving_team", "shot_team", "shot_x", "shot_y", "team1_score", "team2_score", "team1_player1", "team1_player2", "team2_player1", "team2_player2", "team1_player1_x", "team1_player1_y", "team1_player2_x", "team1_player2_y", "team2_player1_x", "team2_player1_y", "team2_player2_x", "team2_player2_y", "shot_type", "stroke_type", "id", "period", "shot_player")
@@ -183,6 +185,12 @@ print(x)
 }
 
 test <- matches
+
+```
+
+```{r}
+
+
 
 ```
 
