@@ -14,17 +14,6 @@ library(rvest)
 
 ```{r}
 
-pickleball <- data.frame(matrix(0, ncol = 22, nrow = 1))
-
-names(pickleball) <- c("game_type", "set_id", "event_id", "x", "y", "event", "error", "stroke", "shot", "athlete_id", "team1_score", "team2_score",
-                       "team1_player1_x", "team1_player1_y", "team1_player2_x", "team1_player2_y", 
-                       "team2_player1_x", "team2_player1_y","team2_player2_x", "team2_player2_y",
-                       "serving_team", "defending_team")
-
-```
-
-```{r}
-
 temp_html <- read_html("https://www.babycenter.com/baby-names/most-popular/top-baby-names")
 last_temp_html <- read_html("https://www.thoughtco.com/most-common-us-surnames-1422656")
 baby_names <- as.data.frame(temp_html %>%
@@ -37,7 +26,7 @@ last_names <- as.data.frame(last_temp_html %>%
   html_table()) %>%
   select(Surname)
 sexes <- c("Male", "Female")
-countries <- c("United States", "Canada", "Mexico", "Great Britain", "France", "Spain", "Finland", "China", "Brazil", "Japan")
+countries <- c("United States", "Canada", "Mexico", "United Kingdom", "France", "Spain", "Finland", "China", "Brazil", "Japan", "Germany", "Italy", "Portugal", "Columbia", "Chile", "Ecuador", "Egypt", "Morocco", "Denmark", "El Salvador", "Venezuela", "Uruguay", "Vietnam", "Sweden", "Singapore", "Peru", "Poland", "Russia", "Ukraine", "Philippines", "Ethiopia", "Chad", "Central African Republic", "Cameroon", "Cambodia")
 
 ```
 
