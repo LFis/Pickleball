@@ -45,7 +45,7 @@ countries <- c("United States", "Canada", "Mexico", "Great Britain", "France", "
 
 athletes <- data.frame()
 
-for (i in 1:100) {
+for (i in 1:300) {
   sex <- sample(sexes, size = 1)
   athletes[i,1] <- case_when(sex == "Male" ~ paste0(sample_n(boy_names, 1)[[1]], " ", sample_n(last_names, 1)[[1]]),
                              sex == "Female" ~ paste0(sample_n(girl_names, 1)[[1]], " ", sample_n(last_names, 1)[[1]]))
@@ -85,6 +85,9 @@ event_outcomes <- c("continuation", "end")
 
 temp_set <- data.frame()
 
+matches <- data.frame()
+
+for (x in 1:300) {
 
 game_type <- sample(game_types)[[1]]
 
@@ -118,28 +121,60 @@ for (i in 1:500) {
   temp_set[i,14] <- team2[[1,7]]
   temp_set[i,15] <- ifelse(game_type == "doubles", team2[[2,7]], NA)
   temp_set[i,16] <- case_when(temp_set[i,1] == "singles" & temp_set[i,7] == "Team 2" ~ temp_set[i,8] + runif(1, -2, 2),
+                              temp_set[i,1] == "singles" & temp_set[i,7] == "Team 1" ~ runif(1, 7, 13),
                               temp_set[i,7] == "Team 2" & temp_set[i,8] <= 10 ~ temp_set[i,8] + runif(1, -2, 2),
                               TRUE ~ runif(1, 3, 7))
   temp_set[i,17] <- case_when(temp_set[i,1] == "singles" & temp_set[i,7] == "Team 2" ~ temp_set[i,9] + runif(1, -2, 0),
+                              temp_set[i,1] == "singles" & temp_set[i,7] == "Team 1" ~ runif(1, 3, 10),
                               temp_set[i,7] == "Team 2" & temp_set[i,8] <= 10 ~ temp_set[i,9] + runif(1, -2, 0),
                               TRUE ~ runif(1, 3, 10))
   temp_set[i,18] <- case_when(temp_set[i,1] == "doubles" & temp_set[i,7] == "Team 2" & temp_set[i,8] > 10 ~ temp_set[i,8] + runif(1, -2, 2),
+                              temp_set[i,1] == "singles" ~ NA,
                               TRUE ~ runif(1, 13, 17))
   temp_set[i,19] <- case_when(temp_set[i,1] == "doubles" & temp_set[i,7] == "Team 2" & temp_set[i,8] > 10 ~ temp_set[i,9] + runif(1, -2, 0),
+                              temp_set[i,1] == "singles" ~ NA,
                               TRUE ~ runif(1, 3, 10))
   temp_set[i,20] <- case_when(temp_set[i,1] == "singles" & temp_set[i,7] == "Team 1" ~ temp_set[i,8] + runif(1, -2, 2),
+                              temp_set[i,1] == "singles" & temp_set[i,7] == "Team 2" ~ runif(1, 7, 13),
                               temp_set[i,7] == "Team 1" & temp_set[i,8] >= 10 ~ temp_set[i,8] + runif(1, -2, 2),
                               TRUE ~ runif(1, 13, 17))
   temp_set[i,21] <- case_when(temp_set[i,1] == "singles" & temp_set[i,7] == "Team 1" ~ temp_set[i,9] + runif(1, -2, 0),
+                              temp_set[i,1] == "singles" & temp_set[i,7] == "Team 2" ~ runif(1, 34, 41),
                               temp_set[i,7] == "Team 1" & temp_set[i,8] >= 10 ~ temp_set[i,9] + runif(1, -2, 0),
                               TRUE ~ runif(1, 34, 41))
   temp_set[i,22] <- case_when(temp_set[i,1] == "doubles" & temp_set[i,7] == "Team 1" & temp_set[i,8] < 10 ~ temp_set[i,8] + runif(1, -2, 2),
+                              temp_set[i,1] == "singles" ~ NA,
                               TRUE ~ runif(1, 3, 7))
   temp_set[i,23] <- case_when(temp_set[i,1] == "doubles" & temp_set[i,7] == "Team 1" & temp_set[i,8] < 10 ~ temp_set[i,9] + runif(1, -2, 0),
+                              temp_set[i,1] == "singles" ~ NA,
                               TRUE ~ runif(1, 34, 41))
+  temp_set[i,24] <- case_when(temp_set[i,3] == "serve" ~ "Serve",
+                              temp_set[i,4] < 4 ~ case_when(runif(1,0,1) > .3 ~ "Attack Volley",
+                                                            TRUE ~ "Dink"),
+                              TRUE ~ case_when(runif(1, 0, 1) > .3 ~ "Attack Volley",
+                                               TRUE ~ case_when(runif(1,0,1) > .4 ~ "Dink",
+                                                                TRUE ~ "Kill Shot")))
+  temp_set[i,25] <- case_when(temp_set[i,1] == "singles" & temp_set[i,9] < 22 & temp_set[i,16] <= temp_set[i,8] ~ "Forehand",
+                              temp_set[i,1] == "singles" & temp_set[i,9] < 22 & temp_set[i,16] > temp_set[i,8] ~ "Backhand",
+                              temp_set[i,1] == "singles" & temp_set[i,9] > 22 & temp_set[i,20] > temp_set[i,8] ~ "Forehand",
+                              temp_set[i,1] == "singles" & temp_set[i,9] > 22 & temp_set[i,20] <= temp_set[i,8] ~ "Backhand",
+                              temp_set[i,1] == "doubles" & temp_set[i,9] < 22 & temp_set[i,8] <= 10 & temp_set[i,16] <= temp_set[i,8] ~ "Forehand",
+                              temp_set[i,1] == "doubles" & temp_set[i,9] < 22 & temp_set[i,8] <= 10 & temp_set[i,16] > temp_set[i,8] ~ "Backhand",
+                              temp_set[i,1] == "doubles" & temp_set[i,9] < 22 & temp_set[i,8] > 10 & temp_set[i,18] <= temp_set[i,8] ~ "Forehand",
+                              temp_set[i,1] == "doubles" & temp_set[i,9] < 22 & temp_set[i,8] > 10 & temp_set[i,18] > temp_set[i,8] ~ "Backhand",
+                              temp_set[i,1] == "doubles" & temp_set[i,9] > 22 & temp_set[i,8] >= 10 & temp_set[i,20] >= temp_set[i,8] ~ "Forehand",
+                              temp_set[i,1] == "doubles" & temp_set[i,9] > 22 & temp_set[i,8] >= 10 & temp_set[i,20] < temp_set[i,8] ~ "Backhand",
+                              temp_set[i,1] == "doubles" & temp_set[i,9] > 22 & temp_set[i,8] < 10 & temp_set[i,22] >= temp_set[i,8] ~ "Forehand",
+                              temp_set[i,1] == "doubles" & temp_set[i,9] > 22 & temp_set[i,8] < 10 & temp_set[i,22] < temp_set[i,8] ~ "Backhand")
+  temp_set[i,26] <- x
 }
 
-names(temp_set) <- c("game_type", "event_id", "event", "set_event_id", "set_id", "serving_team", "shot_team", "shot_x", "shot_y", "team1_score", "team2_score", "team1_player1", "team1_player2", "team2_player1", "team2_player2", "team1_player1_x", "team1_player1_y", "team1_player2_x", "team1_player2_y", "team2_player1_x", "team2_player1_y", "team2_player2_x", "team2_player2_y")
+names(temp_set) <- c("game_type", "event_id", "event", "set_event_id", "set_id", "serving_team", "shot_team", "shot_x", "shot_y", "team1_score", "team2_score", "team1_player1", "team1_player2", "team2_player1", "team2_player2", "team1_player1_x", "team1_player1_y", "team1_player2_x", "team1_player2_y", "team2_player1_x", "team2_player1_y", "team2_player2_x", "team2_player2_y", "shot_type", "stroke_type", "id")
+
+matches <- rbind(matches, temp_set)
+print(x)
+}
+
 
 ```
 
