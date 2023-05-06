@@ -12,25 +12,36 @@ library(rvest)
 
 ```
 
-```{r}
+First we need to create athletes that will be competing in our Pickleball games.In order to bring our athletes to life we should assign them some human identifiers like name, country of origin, sex, etc. 
+
+```{r athlete generation}
+
+#We'll scrape the web for a list of popular names by gender. 
 
 temp_html <- read_html("https://www.babycenter.com/baby-names/most-popular/top-baby-names")
+
 last_temp_html <- read_html("https://www.thoughtco.com/most-common-us-surnames-1422656")
+
 baby_names <- as.data.frame(temp_html %>%
   html_table())
+
 girl_names <- baby_names %>%
   select(-1,-3)
+
 boy_names <- baby_names %>%
   select(-1,-2)
+
 last_names <- as.data.frame(last_temp_html %>%
   html_table()) %>%
   select(Surname)
+
+#Now that we have our names, we need to create our other identifiers.
+
 sexes <- c("Male", "Female")
+
 countries <- c("United States", "Canada", "Mexico", "United Kingdom", "France", "Spain", "Finland", "China", "Brazil", "Japan", "Germany", "Italy", "Portugal", "Columbia", "Chile", "Ecuador", "Egypt", "Morocco", "Denmark", "El Salvador", "Venezuela", "Uruguay", "Vietnam", "Sweden", "Singapore", "Peru", "Poland", "Russia", "Ukraine", "Philippines", "Ethiopia", "Chad", "Central African Republic", "Cameroon", "Cambodia")
 
-```
-
-```{r}
+#Next we'll create a blank data frame that we can add our athletes to
 
 athletes <- data.frame()
 
