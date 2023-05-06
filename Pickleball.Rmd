@@ -1,10 +1,3 @@
----
-title: "Pickleball"
-author: "Logan Fisher"
-date: "`r Sys.Date()`"
-output: html_document
----
-
 ```{r}
 
 library(tidyverse)
@@ -45,29 +38,52 @@ countries <- c("United States", "Canada", "Mexico", "United Kingdom", "France", 
 
 athletes <- data.frame()
 
+#Here we'll loop through the creation of 300 individual athletes of varying quality. 
+
 for (i in 1:300) {
+  
+  #Many athlete identifiers will be dependent upon their gender so we should determine that first by random selection
+  
   sex <- sample(sexes, size = 1)
+  
+  #Now that we know the athlete's gender we can go column by column filling out the rest of their profile with the dependent information. 
+  
+  #Name
   athletes[i,1] <- case_when(sex == "Male" ~ paste0(sample_n(boy_names, 1)[[1]], " ", sample_n(last_names, 1)[[1]]),
                              sex == "Female" ~ paste0(sample_n(girl_names, 1)[[1]], " ", sample_n(last_names, 1)[[1]]))
+  #Age
   athletes[i,2] <- sample(19:27, 1)
+  #Sex
   athletes[i,3] <- sex
+  #Height
   athletes[i,4] <- case_when(sex == "Male" ~ sample(66:76, 1),
                              sex == "Female" ~ sample(60:70, 1))
+  #Weight
   athletes[i,5] <- case_when(sex == "Male" ~ sample(140:220, 1),
                              sex == "Female" ~ sample(100:180, 1))
+  #Country of Origin
   athletes[i,6] <- sample(countries)[[1]]
+  #Athlete ID
   athletes[i,7] <- i
+  #Singles DUPR. Pickleball's rating system
   athletes[i,8] <- runif(1, 3, 7)
+  #Because an athlete's quality shouldn't be drastically affected by singles vs doubles, we can now slightly modify their Single's rating to produce a similar doubles rating. 
   athletes[i,9] <- case_when(athletes[i,8] + athletes[i,8] * runif(1, -.2, .2) > 8 ~ 8,
                              athletes[i,8] + athletes[i,8] * runif(1, -.2, .2) < 2 ~ 2,
                              TRUE ~ athletes[i,8] + athletes[i,8] * runif(1, -.2, .2))
   
 }
 
+#Now that we have our data frame we can assign each column a name
 names(athletes) <- c("Name", "Age", "Sex", "Height", "Weight", "Country", "ID", "Singles_DUPR", "Doubles_DUPR")
 ```
 
+
+We now have our athletes that will be competing in our Pickleball games so the next step will be creating the games themselves. 
+
 ```{r metrics}
+
+#Here we lay out the types of events and outcomes to use in our games. We won't use all of these but they'll be nice to have if we decide to change our model moving forward. 
 
 error_types <- c("Out Error", "Net Error", "Foot Fault")
 
@@ -79,9 +95,7 @@ game_types <- c("singles", "doubles")
 
 event_outcomes <- c("continuation", "end")
 
-```
-
-```{r data generation}
+#We'll use the same model that we used in athlete generation to create our games. This process will be slightly more involved but the process is essentially the same. We'll loop through each individual step and create columns based on identifiers that we lay out earlier. We'll be using a nested loop to create the events that occur within each of the 300 games that we're hoping to produce. 
 
 temp_set <- data.frame()
 
@@ -89,7 +103,11 @@ matches <- data.frame()
 
 for (x in 1:300) {
 
+#Just like how our athlete's information was dependent upon their sex, each game will be created based on if it's a singles match or doubles. 
+  
 game_type <- sample(game_types)[[1]]
+
+#Based on the game type we'll assign athletes to either team
 
 team1 <- case_when(game_type == "singles" ~ sample_n(athletes, size = 1), 
                    TRUE ~ sample_n(athletes, size = 2))
@@ -97,63 +115,88 @@ team2 <- case_when(game_type == "singles" ~ sample_n(subset(athletes, !(ID %in% 
                 TRUE ~ sample_n(subset(athletes, !(ID %in% team1$ID)), 2))
 
 for (i in 1:500) {
+  #Game Type
   temp_set[i,1] <- game_type
+  #Event ID
   temp_set[i,2] <- i
+  #Creating the beginning, middle, and ends of sets within games
   temp_set[i,3] <- ifelse(i > 1, ifelse(runif(1,0,1) > .9, ifelse(temp_set[i-1,3] == "end", "serve", "end"), ifelse(temp_set[i-1,3] == "end", "serve", "continuation")), "serve")
+  #Set Event ID
   temp_set[i,4] <- ifelse(temp_set[i,3] == "serve", 1, temp_set[i-1,4] + 1)
+  #Set ID
   temp_set[i,5] <- ifelse(i == 1, 1, ifelse(temp_set[i,3] == "serve", temp_set[i-1,5] + 1, temp_set[i-1,5]))
+  #Which team served the ball for this set
   temp_set[i,6] <- ifelse(temp_set[i,5]%%2==1, "Team 1", "Team 2")
+  #Which team hit ball on this unique set event
   temp_set[i,7] <- case_when(temp_set[i,6] == "Team 1" & temp_set[i,4]%%2==1 ~ "Team 1",
                              temp_set[i,6] == "Team 1" & temp_set[i,4]%%2==0 ~ "Team 2",
                              temp_set[i,6] == "Team 2" & temp_set[i,4]%%2==1 ~ "Team 2",
                              temp_set[i,6] == "Team 2" & temp_set[i,4]%%2==0 ~ "Team 1")
+  #Determining where the ball hit the court on the X Axis
   temp_set[i,8] <- runif(1, 0, 20)
+  #Determining where the ball hit the court on the Y Axis
   temp_set[i,9] <- case_when(temp_set[i,6] == "Team 1" & temp_set[i,4]%%2==1 ~ runif(1, 22, 44),
                              temp_set[i,6] == "Team 1" & temp_set[i,4]%%2==0 ~ runif(1, 0, 22),
                              temp_set[i,6] == "Team 2" & temp_set[i,4]%%2==1 ~ runif(1, 0, 22),
                              temp_set[i,6] == "Team 2" & temp_set[i,4]%%2==0 ~ runif(1, 22, 44))
+  #Team 1 Score
   temp_set[i,10] <- ifelse(i == 1, 0, case_when(temp_set[i,3] == "end" & temp_set[i,7] == "Team 2" ~ temp_set[i-1,10] + 1,
                                                 TRUE ~ temp_set[i-1, 10]))
+  #Team 2 Score
   temp_set[i,11] <- ifelse(i == 1, 0, case_when(temp_set[i,3] == "end" & temp_set[i,7] == "Team 1" ~ temp_set[i-1,11] + 1,
                                                 TRUE ~ temp_set[i-1, 11]))
+  #Team 1 Player 1
   temp_set[i,12] <- team1[[1,7]]
+  #Team 1 Player 2 if it's a doubles match
   temp_set[i,13] <- ifelse(game_type == "doubles", team1[[2,7]], NA)
+  #Team 2 Player 1
   temp_set[i,14] <- team2[[1,7]]
+  #Team 2 Player 2 if it's a doubles match
   temp_set[i,15] <- ifelse(game_type == "doubles", team2[[2,7]], NA)
+  #Keeping track of Team 1 Player 1 on the X Axis
   temp_set[i,16] <- case_when(temp_set[i,1] == "singles" & temp_set[i,7] == "Team 2" ~ temp_set[i,8] + runif(1, -2, 2),
                               temp_set[i,1] == "singles" & temp_set[i,7] == "Team 1" ~ runif(1, 7, 13),
                               temp_set[i,7] == "Team 2" & temp_set[i,8] <= 10 ~ temp_set[i,8] + runif(1, -2, 2),
                               TRUE ~ runif(1, 3, 7))
+  #Keeping track of Team 1 Player 1 on the Y Axis
   temp_set[i,17] <- case_when(temp_set[i,1] == "singles" & temp_set[i,7] == "Team 2" ~ temp_set[i,9] + runif(1, -2, 0),
                               temp_set[i,1] == "singles" & temp_set[i,7] == "Team 1" ~ runif(1, 3, 10),
                               temp_set[i,7] == "Team 2" & temp_set[i,8] <= 10 ~ temp_set[i,9] + runif(1, -2, 0),
                               TRUE ~ runif(1, 3, 10))
+  #Keeping track of Team 1 Player 2 on the X Axis
   temp_set[i,18] <- case_when(temp_set[i,1] == "doubles" & temp_set[i,7] == "Team 2" & temp_set[i,8] > 10 ~ temp_set[i,8] + runif(1, -2, 2),
                               temp_set[i,1] == "singles" ~ NA,
                               TRUE ~ runif(1, 13, 17))
+  #Keeping track of Team 1 Player 2 on the Y Axis
   temp_set[i,19] <- case_when(temp_set[i,1] == "doubles" & temp_set[i,7] == "Team 2" & temp_set[i,8] > 10 ~ temp_set[i,9] + runif(1, -2, 0),
                               temp_set[i,1] == "singles" ~ NA,
                               TRUE ~ runif(1, 3, 10))
+  #Keeping track of Team 2 Player 1 on the X Axis
   temp_set[i,20] <- case_when(temp_set[i,1] == "singles" & temp_set[i,7] == "Team 1" ~ temp_set[i,8] + runif(1, -2, 2),
                               temp_set[i,1] == "singles" & temp_set[i,7] == "Team 2" ~ runif(1, 7, 13),
                               temp_set[i,7] == "Team 1" & temp_set[i,8] >= 10 ~ temp_set[i,8] + runif(1, -2, 2),
                               TRUE ~ runif(1, 13, 17))
+  #Keeping track of Team 2 Player 1 on the Y Axis
   temp_set[i,21] <- case_when(temp_set[i,1] == "singles" & temp_set[i,7] == "Team 1" ~ temp_set[i,9] + runif(1, -2, 0),
                               temp_set[i,1] == "singles" & temp_set[i,7] == "Team 2" ~ runif(1, 34, 41),
                               temp_set[i,7] == "Team 1" & temp_set[i,8] >= 10 ~ temp_set[i,9] + runif(1, -2, 0),
                               TRUE ~ runif(1, 34, 41))
+  #Keeping track of Team 2 Player 2 on the X Axis
   temp_set[i,22] <- case_when(temp_set[i,1] == "doubles" & temp_set[i,7] == "Team 1" & temp_set[i,8] < 10 ~ temp_set[i,8] + runif(1, -2, 2),
                               temp_set[i,1] == "singles" ~ NA,
                               TRUE ~ runif(1, 3, 7))
+  #Keeping track of Team 2 Player 2 on the Y Axis
   temp_set[i,23] <- case_when(temp_set[i,1] == "doubles" & temp_set[i,7] == "Team 1" & temp_set[i,8] < 10 ~ temp_set[i,9] + runif(1, -2, 0),
                               temp_set[i,1] == "singles" ~ NA,
                               TRUE ~ runif(1, 34, 41))
+  #Determining the Shot Type
   temp_set[i,24] <- case_when(temp_set[i,3] == "serve" ~ "Serve",
                               temp_set[i,4] < 4 ~ case_when(runif(1,0,1) > .3 ~ "Attack Volley",
                                                             TRUE ~ "Dink"),
                               TRUE ~ case_when(runif(1, 0, 1) > .3 ~ "Attack Volley",
                                                TRUE ~ case_when(runif(1,0,1) > .4 ~ "Dink",
                                                                 TRUE ~ "Kill Shot")))
+  #Determining Stroke Type based on player & ball position
   temp_set[i,25] <- case_when(temp_set[i,1] == "singles" & temp_set[i,9] < 22 & temp_set[i,16] <= temp_set[i,8] ~ "Forehand",
                               temp_set[i,1] == "singles" & temp_set[i,9] < 22 & temp_set[i,16] > temp_set[i,8] ~ "Backhand",
                               temp_set[i,1] == "singles" & temp_set[i,9] > 22 & temp_set[i,20] > temp_set[i,8] ~ "Forehand",
@@ -166,11 +209,14 @@ for (i in 1:500) {
                               temp_set[i,1] == "doubles" & temp_set[i,9] > 22 & temp_set[i,8] >= 10 & temp_set[i,20] < temp_set[i,8] ~ "Backhand",
                               temp_set[i,1] == "doubles" & temp_set[i,9] > 22 & temp_set[i,8] < 10 & temp_set[i,22] >= temp_set[i,8] ~ "Forehand",
                               temp_set[i,1] == "doubles" & temp_set[i,9] > 22 & temp_set[i,8] < 10 & temp_set[i,22] < temp_set[i,8] ~ "Backhand")
+  #Assigning Match ID
   temp_set[i,26] <- x
+  #Creating a stopping point for matches once a team has at least 11 points and is up by 2
   temp_set[i,27] <- case_when(temp_set[i,3] == "end" & temp_set[i,10] == 11 & temp_set[i,11] <= 9 ~ "end",
                               temp_set[i,3] == "end" & temp_set[i,11] == 11 & temp_set[i,10] <= 9 ~ "end",
                               temp_set[i,3] == "end" & temp_set[i,10] >= 11 & temp_set[i,10] > temp_set[i,11] & temp_set[i,10] - temp_set[i,11] == 2 ~ "end",
                               temp_set[i,3] == "end" & temp_set[i,11] >= 11 & temp_set[i,11] > temp_set[i,10] & temp_set[i,11] - temp_set[i,10] == 2 ~ "end")
+  #Keeping track of who hit the ball
   temp_set[i,28] <- case_when(temp_set[i,3] == "serve" & temp_set[i,6] == "Team 1" ~ temp_set[i,12],
                               temp_set[i,3] == "serve" & temp_set[i,6] == "Team 2" ~ temp_set[i,14],
                               temp_set[i,1] == "doubles" & temp_set[i,7] == "Team 1" & temp_set[i,8] <= 10 ~ temp_set[i,12],
@@ -181,7 +227,10 @@ for (i in 1:500) {
                               temp_set[i,1] == "singles" & temp_set[i,9] > 22 ~ temp_set[i,14])
 }
 
+#Assigning names to our data frame columns
 names(temp_set) <- c("game_type", "event_id", "event", "set_event_id", "set_id", "serving_team", "shot_team", "shot_x", "shot_y", "team1_score", "team2_score", "team1_player1", "team1_player2", "team2_player1", "team2_player2", "team1_player1_x", "team1_player1_y", "team1_player2_x", "team1_player2_y", "team2_player1_x", "team2_player1_y", "team2_player2_x", "team2_player2_y", "shot_type", "stroke_type", "id", "period", "shot_player")
+
+#Here we'll clean up the match to remove any unnecessary data after the game has ended and we'll combine it with our other matches.
 
 match_end <- temp_set %>%
   filter(period == "end")
@@ -195,15 +244,9 @@ matches <- rbind(matches, temp_set)
 print(x)
 }
 
+#Creating a new version of the data frame for additional transformation
+
 test <- matches
-
-```
-
-```{r}
-
-write_csv(matches, "C:\\Users\\LoganFisher\\Documents\\Pickleball\\Pickleball.csv")
-
-write_csv(athletes, "C:\\Users\\LoganFisher\\Documents\\Pickleball\\Athletes.csv")
 
 ```
 
